@@ -1,14 +1,16 @@
 package org.castlebet.chess.domain
 
+import org.castlebet.chess.infrastructure.persistence.MongoPlayers
+
 interface Players {
 
-    fun add(player: PlayerToCreate)
+    suspend fun add(player: PlayerToCreate)
 
-    fun get(id: PlayerId): PlayerResult?
+    suspend fun get(id: PlayerId): PlayerResult?
 
-    fun update(player: PlayerToUpdate): UpdatePlayerResult
+    suspend fun update(player: PlayerToUpdate): MongoPlayers.UpdatePlayerResult
 
-    fun getAll(): List<PlayerResult>
+    suspend fun getAll(): List<PlayerResult>
 
-    fun clear()
+    suspend fun clear()
 }

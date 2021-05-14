@@ -4,19 +4,27 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>mainModule</artifactId>
-    <groupId>me.jetbrains</groupId>
+    <groupId>org.castlebet</groupId>
+    <artifactId>chess</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>mainModule</name>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <kotlin.compiler.jvmTarget>15</kotlin.compiler.jvmTarget>
-        <ktor.version>1.5.4</ktor.version>
-        <logback_version>1.2.3</logback_version>
         <main.class>com.example.ApplicationKt</main.class>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
+        <kotlin.version>1.4.32</kotlin.version>
+        <lib.ktor.version>1.5.4</lib.ktor.version>
+        <lib.logback.version>1.2.3</lib.logback.version>
+        <lib.kmongo-coroutine.version>4.2.6</lib.kmongo-coroutine.version>
+        <lib.junit-jupiter.version>5.7.1</lib.junit-jupiter.version>
+        <lib.assertj-core.version>3.19.0</lib.assertj-core.version>
+        <lib.mockk.version>1.11.0</lib.mockk.version>
+        <lib.testcontainers.version>1.15.3</lib.testcontainers.version>
+        <lib.koin.version>2.2.2</lib.koin.version>
+        <lib.kotlinx-serialization-json-jvm.version>1.2.0</lib.kotlinx-serialization-json-jvm.version>
     </properties>
 
     <repositories>
@@ -33,7 +41,7 @@
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
-                <version>1.5.0</version>
+                <version>${kotlin.version}</version>
                 <executions>
                     <execution>
                         <id>compile</id>
@@ -51,7 +59,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <jvmTarget>15</jvmTarget>
+                    <jvmTarget>1.8</jvmTarget>
                     <compilerPlugins>
                         <plugin>kotlinx-serialization</plugin>
                     </compilerPlugins>
@@ -60,7 +68,7 @@
                     <dependency>
                         <groupId>org.jetbrains.kotlin</groupId>
                         <artifactId>kotlin-maven-serialization</artifactId>
-                        <version>1.5.0</version>
+                        <version> ${kotlin.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -79,78 +87,103 @@
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-test-junit</artifactId>
-            <version>1.5.0</version>
+            <version>${kotlin.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
-            <version>1.5.0</version>
+            <version>${kotlin.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-serialization-json-jvm</artifactId>
-            <version>1.2.0</version>
+            <version>${lib.kotlinx-serialization-json-jvm.version}</version>
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
             <artifactId>ktor-server-core</artifactId>
-            <version>${ktor.version}</version>
+            <version>${lib.ktor.version}</version>
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
             <artifactId>ktor-server-netty</artifactId>
-            <version>${ktor.version}</version>
+            <version>${lib.ktor.version}</version>
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
             <artifactId>ktor-serialization</artifactId>
-            <version>${ktor.version}</version>
+            <version>${lib.ktor.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${logback_version}</version>
+            <version>${lib.logback.version}</version>
         </dependency>
         <dependency>
             <groupId>org.koin</groupId>
             <artifactId>koin-core</artifactId>
-            <version>2.2.2</version>
+            <version>${lib.koin.version}</version>
         </dependency>
         <dependency>
             <groupId>org.koin</groupId>
             <artifactId>koin-ktor</artifactId>
-            <version>2.2.2</version>
+            <version>${lib.koin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.litote.kmongo</groupId>
+            <artifactId>kmongo-coroutine</artifactId>
+            <version>${lib.kmongo-coroutine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.12.3</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.7.1</version>
+            <version>${lib.junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.19.0</version>
+            <version>${lib.assertj-core.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.mockk</groupId>
             <artifactId>mockk</artifactId>
-            <version>1.11.0</version>
+            <version>${lib.mockk.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
             <artifactId>ktor-server-tests</artifactId>
-            <version>${ktor.version}</version>
+            <version>${lib.ktor.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.koin</groupId>
             <artifactId>koin-test</artifactId>
-            <version>2.2.2</version>
+            <version>${lib.koin.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>${lib.testcontainers.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mongodb</artifactId>
+            <version>${lib.testcontainers.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${lib.testcontainers.version}</version>
         </dependency>
 
     </dependencies>
