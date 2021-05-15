@@ -25,12 +25,12 @@ import org.castlebet.chess.domain.PlayerToCreate
 import org.castlebet.chess.domain.PlayerToUpdate
 import org.castlebet.chess.domain.Players
 import org.castlebet.chess.domain.Score
-import org.castlebet.chess.domain.UpdatePlayerResult
+import org.castlebet.chess.infrastructure.persistence.MongoPlayers
+import org.castlebet.chess.infrastructure.persistence.MongoPlayers.UpdatePlayerResult
 import org.koin.ktor.ext.inject
 
 
 fun Application.routes() {
-
     val players: Players by inject()
 
     install(StatusPages) {
@@ -68,8 +68,8 @@ fun Application.routes() {
                 log.info("PATCH Method")
                 val request = call.receive(JsonScore::class)
                 when (players.update(PlayerToUpdate(call.pathParamToPlayerId(), Score(request.score)))) {
-                    is UpdatePlayerResult.Success -> call.respond(HttpStatusCode.OK)
-                    is UpdatePlayerResult.NotFound -> call.respond(HttpStatusCode.NotFound, "id ${call.pathParamToPlayerId().value}")
+                    UpdatePlayerResult.Success -> call.respond(HttpStatusCode.OK)
+                    UpdatePlayerResult.NotFound -> call.respond(HttpStatusCode.NotFound, "id ${call.pathParamToPlayerId().value}")
                 }
             }
         }

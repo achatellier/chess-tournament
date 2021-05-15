@@ -21,7 +21,8 @@ import org.castlebet.chess.domain.PlayerResult
 import org.castlebet.chess.domain.PlayerToUpdate
 import org.castlebet.chess.domain.Players
 import org.castlebet.chess.domain.Score
-import org.castlebet.chess.domain.UpdatePlayerResult
+import org.castlebet.chess.infrastructure.persistence.MongoPlayers
+import org.castlebet.chess.infrastructure.persistence.MongoPlayers.UpdatePlayerResult.*
 import org.castlebet.chess.main
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -126,7 +127,7 @@ internal class RouterTest : WithAssertions {
         testApp {
             coEvery {
                 players.update(PlayerToUpdate(PlayerId("1"), Score(10)))
-            } returns UpdatePlayerResult.Success
+            } returns Success
 
             val call = handleRequest(HttpMethod.Patch, "/tournament-players/1") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -143,7 +144,7 @@ internal class RouterTest : WithAssertions {
         testApp {
             coEvery {
                 players.update(PlayerToUpdate(PlayerId("1"), Score(10)))
-            } returns UpdatePlayerResult.NotFound
+            } returns NotFound
 
             val call = handleRequest(HttpMethod.Patch, "/tournament-players/1") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
