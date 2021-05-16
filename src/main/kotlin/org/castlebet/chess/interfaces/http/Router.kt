@@ -25,7 +25,6 @@ import org.castlebet.chess.domain.PlayerToCreate
 import org.castlebet.chess.domain.PlayerToUpdate
 import org.castlebet.chess.domain.Players
 import org.castlebet.chess.domain.Score
-import org.castlebet.chess.infrastructure.persistence.MongoPlayers
 import org.castlebet.chess.infrastructure.persistence.MongoPlayers.UpdatePlayerResult
 import org.koin.ktor.ext.inject
 
@@ -48,7 +47,7 @@ fun Application.routes() {
             post {
                 log.info("POST Method")
                 val request = call.receive(JsonPlayerToCreate::class)
-                call.respond(HttpStatusCode.Created, players.add(request.toPlayer()))
+                call.respond(HttpStatusCode.Created, players.add(request.toPlayer()).toJson())
             }
             delete {
                 log.info("DELETE Method")
@@ -82,15 +81,12 @@ suspend fun handleBadRequest(t: Throwable, call: ApplicationCall) {
     call.respondText(t.localizedMessage, ContentType.Text.Plain, HttpStatusCode.BadRequest)
 }
 
-@Serializable
-data class JsonPlayerToCreate(val nickname: String) {
+private fun PlayerToCreate.toJson() = JsonPlayerCreated(playerId.value, nickname)
+private fun PlayerResult.toJson() = JsonPlayerResult(id.value, nickname, score.value)
+
+@Serializable data class JsonPlayerToCreate(val nickname: String) {
     fun toPlayer() = PlayerToCreate(nickname)
 }
-
-@Serializable
-data class JsonScore(val score: Int)
-
-@Serializable
-data class JsonPlayerResult(val _id: String, val nickname: String, val score: Int)
-
-private fun PlayerResult.toJson() = JsonPlayerResult(id.value, nickname, score.value)
+@Serializable data class JsonPlayerCreated(val _id: String, val nickname: String)
+@Serializable data class JsonScore(val score: Int)
+@Serializable data class JsonPlayerResult(val _id: String, val nickname: String, val score: Int)

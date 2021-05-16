@@ -24,9 +24,10 @@ import org.litote.kmongo.reactivestreams.KMongo
 
 val myModule = module {
     single { MongoPlayers(get()) as Players }
-    single { KMongo.createClient("mongodb://127.0.0.1:32768").coroutine as CoroutineClient }
+    single { KMongo.createClient("mongodb://127.0.0.1:27017").coroutine as CoroutineClient }
     single { (get() as CoroutineClient).toPlayerCollection() }
 }
+
 
 fun Application.main() {
     install(DefaultHeaders)

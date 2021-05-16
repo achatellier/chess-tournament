@@ -4,7 +4,7 @@ import org.castlebet.chess.infrastructure.persistence.MongoPlayers
 
 interface Players {
 
-    suspend fun add(player: PlayerToCreate)
+    suspend fun add(player: PlayerToCreate): PlayerToCreate
 
     suspend fun get(id: PlayerId): PlayerResult?
 
