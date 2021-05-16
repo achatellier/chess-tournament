@@ -15,6 +15,7 @@ import org.litote.kmongo.EMPTY_BSON
 import org.litote.kmongo.coroutine.CoroutineClient
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.json
+import org.litote.kmongo.util.idValue
 
 typealias PlayerCollection = CoroutineCollection<MongoPlayers.PlayerDb>
 
@@ -22,10 +23,8 @@ fun CoroutineClient.toPlayerCollection(): PlayerCollection = getDatabase("tourna
 
 class MongoPlayers(private val players: PlayerCollection) : Players {
 
-    override suspend fun add(player: PlayerToCreate) {
         //TODO handle players with same nickname
-        players.insertOne(player.toDb())
-    }
+    override suspend fun add(player: PlayerToCreate): PlayerToCreate =            player.also { players.insertOne(player.toDb()) }
 
     override suspend fun get(id: PlayerId) = players.findOne(eq("_id", id.value))?.toPlayerResult()
 

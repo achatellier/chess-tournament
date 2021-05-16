@@ -18,6 +18,7 @@ import kotlinx.serialization.json.Json
 import org.assertj.core.api.WithAssertions
 import org.castlebet.chess.domain.PlayerId
 import org.castlebet.chess.domain.PlayerResult
+import org.castlebet.chess.domain.PlayerToCreate
 import org.castlebet.chess.domain.PlayerToUpdate
 import org.castlebet.chess.domain.Players
 import org.castlebet.chess.domain.Score
@@ -71,7 +72,7 @@ internal class RouterTest : WithAssertions {
     @ParameterizedTest
     fun `should return bad request when payload is invalid `(body: String) {
         testApp {
-            coEvery { players.add(any()) } just Runs
+            coEvery { players.add(any()) } returns PlayerToCreate("nickname", PlayerId("2"))
 
             val call = handleRequest(HttpMethod.Post, "/tournament-players") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -86,7 +87,7 @@ internal class RouterTest : WithAssertions {
     @Test
     fun `should return OK when add repository response is successful and payload is valid`() {
         testApp {
-            coEvery { players.add(any()) } just Runs
+            coEvery { players.add(any()) } returns PlayerToCreate("nickname", PlayerId("2"))
 
             val body = """{"nickname": "anthony"}"""
             val call = handleRequest(HttpMethod.Post, "/tournament-players") {
@@ -95,6 +96,7 @@ internal class RouterTest : WithAssertions {
             }
             with(call) {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.Created)
+                assertThat(response.content).isEqualTo("")
             }
         }
     }
