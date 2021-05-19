@@ -9,13 +9,11 @@ import org.castlebet.chess.domain.PlayerToCreate
 import org.castlebet.chess.domain.PlayerToUpdate
 import org.castlebet.chess.domain.Players
 import org.castlebet.chess.domain.Score
-import org.castlebet.chess.infrastructure.persistence.MongoPlayers.UpdatePlayerResult.NotFound
-import org.castlebet.chess.infrastructure.persistence.MongoPlayers.UpdatePlayerResult.Success
+import org.castlebet.chess.domain.UpdatePlayerResult
 import org.litote.kmongo.EMPTY_BSON
 import org.litote.kmongo.coroutine.CoroutineClient
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.json
-import org.litote.kmongo.util.idValue
 
 typealias PlayerCollection = CoroutineCollection<MongoPlayers.PlayerDb>
 
@@ -23,8 +21,8 @@ fun CoroutineClient.toPlayerCollection(): PlayerCollection = getDatabase("tourna
 
 class MongoPlayers(private val players: PlayerCollection) : Players {
 
-        //TODO handle players with same nickname
-    override suspend fun add(player: PlayerToCreate): PlayerToCreate =            player.also { players.insertOne(player.toDb()) }
+    //TODO handle players with same nickname
+    override suspend fun add(player: PlayerToCreate): PlayerToCreate = player.also { players.insertOne(player.toDb()) }
 
     override suspend fun get(id: PlayerId) = players.findOne(eq("_id", id.value))?.toPlayerResult()
 
@@ -32,14 +30,9 @@ class MongoPlayers(private val players: PlayerCollection) : Players {
         players.updateOne(eq("_id", player.id.value), set("score", player.score.value)).toResult()
 
     private fun UpdateResult.toResult() = when (matchedCount) {
-        1L -> Success
-        0L -> NotFound
+        1L -> UpdatePlayerResult.Success
+        0L -> UpdatePlayerResult.NotFound
         else -> throw IllegalStateException("Non unique id found in database for the document ${this.json}") //no need to pollute the rest of the app with this
-    }
-
-    sealed class UpdatePlayerResult {
-        object Success : UpdatePlayerResult()
-        object NotFound : UpdatePlayerResult()
     }
 
     override suspend fun clear() {
