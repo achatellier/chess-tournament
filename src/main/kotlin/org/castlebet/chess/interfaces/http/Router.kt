@@ -52,7 +52,7 @@ private fun handleError(): suspend PipelineContext<Unit, ApplicationCall>.(Throw
 fun Application.routes() {
     val players: Players by inject()
     install(CallLogging) {
-        level = Level.INFO
+        level = Level.TRACE
     }
     install(StatusPages) {
         exception<SerializationException>(handleBadRequest())
