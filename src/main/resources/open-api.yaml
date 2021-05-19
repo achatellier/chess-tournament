@@ -1,0 +1,137 @@
+openapi: 3.0.1
+info:
+  title: Chess Tournament
+  description: A web appication to manage chess tournaments
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: https://localhost:8080/
+tags:
+  - name: player
+    description: Everything about your Players
+paths:
+  /player:
+    post:
+      tags:
+        - player
+      summary: Add a new player to the tournament
+      operationId: addPlayer
+      requestBody:
+        description: Player object that needs to be added to the tournament
+        content:
+          application/json:
+            schema:
+              properties:
+                nickname:
+                  type: string
+                  example: superman
+        required: true
+      responses:
+        400:
+          description: Invalid nickname supplied
+          content: { }
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+      x-codegen-request-body-name: body
+    get:
+      tags:
+        - player
+      summary: Finds All Players
+      description: Finds all players
+      operationId: findAllPlayers
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Player'
+    delete:
+      tags:
+        - player
+      responses:
+        204:
+          description: successful operation
+      summary: Deletes all player
+      operationId: deletePlayer
+  /player/{playerId}:
+    patch:
+      tags:
+        - player
+      summary: Update player's score
+      operationId: updatePlayer
+      parameters:
+        - name: playerId
+          in: path
+          description: ID of player to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Player score that needs to be updated
+        content:
+          application/json:
+            schema:
+              properties:
+                score:
+                  type: integer
+                  format: int64
+        required: true
+      responses:
+        200:
+          description: successful operation
+        404:
+          description: Player not found
+          content: { }
+      x-codegen-request-body-name: body
+    get:
+      tags:
+        - player
+      summary: Find player by ID
+      description: Returns a single player
+      operationId: getPlayerById
+      parameters:
+        - name: playerId
+          in: path
+          description: ID of player to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+        404:
+          description: Player not found
+          content: { }
+components:
+  schemas:
+    Player:
+      required:
+        - nickname
+      type: object
+      properties:
+        _id:
+          type: integer
+          format: int64
+        nickname:
+          type: string
+          example: superman
+        score:
+          type: integer
+          format: int64
+          description: player score

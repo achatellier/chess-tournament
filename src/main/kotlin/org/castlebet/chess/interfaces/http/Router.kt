@@ -8,11 +8,14 @@ import io.ktor.application.install
 import io.ktor.application.log
 import io.ktor.features.CallLogging
 import io.ktor.features.StatusPages
-import io.ktor.features.callIdMdc
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.defaultResource
+import io.ktor.http.content.resources
+import io.ktor.http.content.static
 import io.ktor.request.receive
 import io.ktor.response.respond
+import io.ktor.response.respondRedirect
 import io.ktor.response.respondText
 import io.ktor.routing.delete
 import io.ktor.routing.get
@@ -31,7 +34,6 @@ import org.castlebet.chess.domain.Players
 import org.castlebet.chess.domain.Score
 import org.castlebet.chess.domain.UpdatePlayerResult
 import org.koin.ktor.ext.inject
-import org.slf4j.Logger
 import org.slf4j.event.Level
 
 
@@ -61,6 +63,10 @@ fun Application.routes() {
     }
 
     routing {
+        static("openapi") {
+            defaultResource("index.html", "openapi")
+        }
+
         route("/tournament-players") {
             get {
                 call.respond(HttpStatusCode.OK, players.getAll().map { it.toJson() })
@@ -97,9 +103,16 @@ private fun ApplicationCall.pathParamToPlayerId() = PlayerId(parameters["id"] ?:
 private fun PlayerToCreate.toJson() = JsonPlayerCreated(playerId.value, nickname)
 private fun PlayerResult.toJson() = JsonPlayerResult(id.value, nickname, score.value)
 
-@Serializable data class JsonPlayerToCreate(val nickname: String) {
+@Serializable
+data class JsonPlayerToCreate(val nickname: String) {
     fun toPlayer() = PlayerToCreate(nickname)
 }
-@Serializable data class JsonPlayerCreated(val _id: String, val nickname: String)
-@Serializable data class JsonScore(val score: Int)
-@Serializable data class JsonPlayerResult(val _id: String, val nickname: String, val score: Int)
+
+@Serializable
+data class JsonPlayerCreated(val _id: String, val nickname: String)
+
+@Serializable
+data class JsonScore(val score: Int)
+
+@Serializable
+data class JsonPlayerResult(val _id: String, val nickname: String, val score: Int)
