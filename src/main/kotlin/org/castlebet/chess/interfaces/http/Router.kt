@@ -2,6 +2,7 @@ package org.castlebet.chess.interfaces.http
 
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
+import io.ktor.application.application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.application.log
@@ -17,6 +18,7 @@ import io.ktor.routing.patch
 import io.ktor.routing.post
 import io.ktor.routing.route
 import io.ktor.routing.routing
+import io.ktor.util.pipeline.PipelineContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import org.castlebet.chess.domain.PlayerId
@@ -25,17 +27,31 @@ import org.castlebet.chess.domain.PlayerToCreate
 import org.castlebet.chess.domain.PlayerToUpdate
 import org.castlebet.chess.domain.Players
 import org.castlebet.chess.domain.Score
-import org.castlebet.chess.infrastructure.persistence.MongoPlayers.UpdatePlayerResult
+import org.castlebet.chess.domain.UpdatePlayerResult
 import org.koin.ktor.ext.inject
 
+
+private fun handleBadRequest(): suspend PipelineContext<Unit, ApplicationCall>.(Exception) -> Unit = { e ->
+    run {
+        call.respondText(e.localizedMessage, ContentType.Text.Plain, HttpStatusCode.BadRequest)
+        application.log.error(e.localizedMessage, e)
+    }
+}
+
+private fun handleError(): suspend PipelineContext<Unit, ApplicationCall>.(Throwable) -> Unit = { e ->
+    run { // Don't to say too much to the client about the error for security reasons but log everything
+        call.respondText("Internal Server Error : see logs for more details", ContentType.Text.Plain, HttpStatusCode.InternalServerError)
+        application.log.error(e.localizedMessage, e)
+    }
+}
 
 fun Application.routes() {
     val players: Players by inject()
 
     install(StatusPages) {
-        exception<SerializationException> { e -> handleBadRequest(e, call) }
-        exception<IllegalArgumentException> { e -> handleBadRequest(e, call) }
-        exception<Throwable> { e -> call.respondText(e.localizedMessage, ContentType.Text.Plain, HttpStatusCode.Created) }
+        exception<SerializationException>(handleBadRequest())
+        exception<IllegalArgumentException>(handleBadRequest())
+        exception(handleError())
     }
 
     routing {
@@ -77,16 +93,19 @@ fun Application.routes() {
 
 private fun ApplicationCall.pathParamToPlayerId() = PlayerId(parameters["id"] ?: throw IllegalArgumentException("id path param is mandatory"))
 
-suspend fun handleBadRequest(t: Throwable, call: ApplicationCall) {
-    call.respondText(t.localizedMessage, ContentType.Text.Plain, HttpStatusCode.BadRequest)
-}
-
 private fun PlayerToCreate.toJson() = JsonPlayerCreated(playerId.value, nickname)
 private fun PlayerResult.toJson() = JsonPlayerResult(id.value, nickname, score.value)
 
-@Serializable data class JsonPlayerToCreate(val nickname: String) {
+@Serializable
+data class JsonPlayerToCreate(val nickname: String) {
     fun toPlayer() = PlayerToCreate(nickname)
 }
-@Serializable data class JsonPlayerCreated(val _id: String, val nickname: String)
-@Serializable data class JsonScore(val score: Int)
-@Serializable data class JsonPlayerResult(val _id: String, val nickname: String, val score: Int)
+
+@Serializable
+data class JsonPlayerCreated(val _id: String, val nickname: String)
+
+@Serializable
+data class JsonScore(val score: Int)
+
+@Serializable
+data class JsonPlayerResult(val _id: String, val nickname: String, val score: Int)

@@ -22,9 +22,12 @@ import org.litote.kmongo.coroutine.CoroutineClient
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
 
+val MONGO_SERVER = System.getenv("MONGO_SERVER") ?: "127.0.0.1"
+
 val myModule = module {
     single { MongoPlayers(get()) as Players }
-    single { KMongo.createClient("mongodb://127.0.0.1:27017").coroutine as CoroutineClient }
+    //TODO better mongo settings are needed
+    single { KMongo.createClient("mongodb://$MONGO_SERVER:27017").coroutine as CoroutineClient }
     single { (get() as CoroutineClient).toPlayerCollection() }
 }
 
@@ -35,16 +38,6 @@ fun Application.main() {
     install(ContentNegotiation) {
         json(Json)
     }
-    install(CORS) {
-        method(HttpMethod.Options)
-        method(HttpMethod.Put)
-        method(HttpMethod.Delete)
-        method(HttpMethod.Patch)
-        header(HttpHeaders.Authorization)
-        allowCredentials = true
-        anyHost() // @TODO: Don't do this in production if possible.
-    }
-
 }
 
 

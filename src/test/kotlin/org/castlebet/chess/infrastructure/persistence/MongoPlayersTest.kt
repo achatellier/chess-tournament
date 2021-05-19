@@ -7,7 +7,7 @@ import org.castlebet.chess.domain.PlayerResult
 import org.castlebet.chess.domain.PlayerToCreate
 import org.castlebet.chess.domain.PlayerToUpdate
 import org.castlebet.chess.domain.Score
-import org.castlebet.chess.infrastructure.persistence.MongoPlayers.UpdatePlayerResult.*
+import org.castlebet.chess.domain.UpdatePlayerResult
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -86,7 +86,7 @@ internal class MongoPlayersTest : WithAssertions {
     fun `update should return failure when player does not exist`() {
         runBlocking {
             val result = mongoPlayers.update(PlayerToUpdate(PlayerId("2"), Score(10)))
-            assertThat(result).isInstanceOf(NotFound::class.java)
+            assertThat(result).isInstanceOf(UpdatePlayerResult.NotFound::class.java)
         }
     }
 

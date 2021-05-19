@@ -8,7 +8,8 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <properties>
-        <main.class>com.example.ApplicationKt</main.class>
+        <main.class>org.castlebet.chess.ApplicationKt</main.class>
+        <jarfile.basename>chess-tournament</jarfile.basename>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
         <kotlin.version>1.4.32</kotlin.version>
@@ -76,6 +77,34 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>2.22.2</version>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <!-- Jar file is named ${jarfile.basename}.jar -->
+                    <finalName>${jarfile.basename}</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <archive>
+                        <manifest>
+                            <!-- Execution entry point class -->
+                            <mainClass>${main.class}</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -117,12 +146,12 @@
             <version>${lib.logback.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.koin</groupId>
+            <groupId>io.insert-koin</groupId>
             <artifactId>koin-core</artifactId>
             <version>${lib.koin.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.koin</groupId>
+            <groupId>io.insert-koin</groupId>
             <artifactId>koin-ktor</artifactId>
             <version>${lib.koin.version}</version>
         </dependency>
@@ -161,7 +190,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.koin</groupId>
+            <groupId>io.insert-koin</groupId>
             <artifactId>koin-test</artifactId>
             <version>${lib.koin.version}</version>
             <scope>test</scope>
