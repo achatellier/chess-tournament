@@ -141,6 +141,11 @@
             <version>${lib.ktor.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.ktor</groupId>
+            <artifactId>ktor-metrics</artifactId>
+            <version>${lib.ktor.version}</version>
+        </dependency>
+        <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${lib.logback.version}</version>
