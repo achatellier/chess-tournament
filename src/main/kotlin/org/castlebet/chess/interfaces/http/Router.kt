@@ -6,7 +6,9 @@ import io.ktor.application.application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.application.log
+import io.ktor.features.CallLogging
 import io.ktor.features.StatusPages
+import io.ktor.features.callIdMdc
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
@@ -29,6 +31,8 @@ import org.castlebet.chess.domain.Players
 import org.castlebet.chess.domain.Score
 import org.castlebet.chess.domain.UpdatePlayerResult
 import org.koin.ktor.ext.inject
+import org.slf4j.Logger
+import org.slf4j.event.Level
 
 
 private fun handleBadRequest(): suspend PipelineContext<Unit, ApplicationCall>.(Exception) -> Unit = { e ->
@@ -47,7 +51,9 @@ private fun handleError(): suspend PipelineContext<Unit, ApplicationCall>.(Throw
 
 fun Application.routes() {
     val players: Players by inject()
-
+    install(CallLogging) {
+        level = Level.INFO
+    }
     install(StatusPages) {
         exception<SerializationException>(handleBadRequest())
         exception<IllegalArgumentException>(handleBadRequest())
@@ -57,30 +63,25 @@ fun Application.routes() {
     routing {
         route("/tournament-players") {
             get {
-                log.info("GET Method")
                 call.respond(HttpStatusCode.OK, players.getAll().map { it.toJson() })
             }
             post {
-                log.info("POST Method")
                 val request = call.receive(JsonPlayerToCreate::class)
                 call.respond(HttpStatusCode.Created, players.add(request.toPlayer()).toJson())
             }
             delete {
-                log.info("DELETE Method")
                 players.clear()
                 call.respond(HttpStatusCode.NoContent)
             }
         }
         route("/tournament-players/{id}") {
             get {
-                log.info("GET Method")
                 players.get(call.pathParamToPlayerId())
                     ?.toJson()
                     ?.run { call.respond(HttpStatusCode.OK, this) }
                     ?: call.respond(HttpStatusCode.NotFound)
             }
             patch {
-                log.info("PATCH Method")
                 val request = call.receive(JsonScore::class)
                 when (players.update(PlayerToUpdate(call.pathParamToPlayerId(), Score(request.score)))) {
                     UpdatePlayerResult.Success -> call.respond(HttpStatusCode.OK)
@@ -96,16 +97,9 @@ private fun ApplicationCall.pathParamToPlayerId() = PlayerId(parameters["id"] ?:
 private fun PlayerToCreate.toJson() = JsonPlayerCreated(playerId.value, nickname)
 private fun PlayerResult.toJson() = JsonPlayerResult(id.value, nickname, score.value)
 
-@Serializable
-data class JsonPlayerToCreate(val nickname: String) {
+@Serializable data class JsonPlayerToCreate(val nickname: String) {
     fun toPlayer() = PlayerToCreate(nickname)
 }
-
-@Serializable
-data class JsonPlayerCreated(val _id: String, val nickname: String)
-
-@Serializable
-data class JsonScore(val score: Int)
-
-@Serializable
-data class JsonPlayerResult(val _id: String, val nickname: String, val score: Int)
+@Serializable data class JsonPlayerCreated(val _id: String, val nickname: String)
+@Serializable data class JsonScore(val score: Int)
+@Serializable data class JsonPlayerResult(val _id: String, val nickname: String, val score: Int)
