@@ -5,10 +5,10 @@
         </encoder>
     </appender>
 
-    <root level="WARN">
+    <root level="TRACE">
         <appender-ref ref="STDOUT"/>
     </root>
 
-    <logger name="io.netty" level="WARN"/>
-    <logger name="org.mongodb.driver" level="INFO"/>
+    <logger name="io.netty" level="DEBUG"/>
+    <logger name="org.mongodb.driver" level="WARN"/>
 </configuration>
