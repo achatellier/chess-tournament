@@ -1,5 +1,7 @@
 package org.castlebet.chess
 
+import com.mongodb.ConnectionString
+import com.mongodb.MongoClientSettings
 import io.ktor.application.Application
 import io.ktor.application.install
 import io.ktor.features.ContentNegotiation
@@ -17,13 +19,27 @@ import org.koin.dsl.module
 import org.litote.kmongo.coroutine.CoroutineClient
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
+import java.util.concurrent.TimeUnit
 
 val MONGO_SERVER = System.getenv("MONGO_SERVER") ?: "127.0.0.1"
 
+val mongoSettings: MongoClientSettings = MongoClientSettings
+    .builder()
+    .applyConnectionString(ConnectionString("mongodb://$MONGO_SERVER:27017"))
+    .applyToSocketSettings {
+        it.connectTimeout(5, TimeUnit.SECONDS).readTimeout(5, TimeUnit.SECONDS).build()
+    }
+    .applyToConnectionPoolSettings {
+        it.maxConnectionIdleTime(10, TimeUnit.MINUTES).build()
+    }
+    .applyToClusterSettings {
+        it.serverSelectionTimeout(1, TimeUnit.SECONDS).build()
+    }
+    .build()
+
 val myModule = module {
     single { MongoPlayers(get()) as Players }
-    //TODO better mongo settings are needed
-    single { KMongo.createClient("mongodb://$MONGO_SERVER:27017").coroutine as CoroutineClient }
+    single { KMongo.createClient(mongoSettings).coroutine as CoroutineClient }
     single { (get() as CoroutineClient).toPlayerCollection() }
 }
 

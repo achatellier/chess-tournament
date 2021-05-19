@@ -57,7 +57,7 @@ fun Application.routes() {
     install(StatusPages) {
         exception<SerializationException>(handleBadRequest())
         exception<IllegalArgumentException>(handleBadRequest())
-        exception(handleError())
+        exception<Exception>(handleError())
     }
 
     routing {
