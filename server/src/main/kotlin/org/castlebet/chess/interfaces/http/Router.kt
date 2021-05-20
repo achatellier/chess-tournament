@@ -6,16 +6,18 @@ import io.ktor.application.application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.application.log
+import io.ktor.features.CORS
 import io.ktor.features.CallLogging
 import io.ktor.features.StatusPages
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.defaultResource
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
 import io.ktor.request.receive
 import io.ktor.response.respond
-import io.ktor.response.respondRedirect
 import io.ktor.response.respondText
 import io.ktor.routing.delete
 import io.ktor.routing.get
@@ -61,11 +63,17 @@ fun Application.routes() {
         exception<IllegalArgumentException>(handleBadRequest())
         exception<Exception>(handleError())
     }
+    install(CORS) {
+        method(HttpMethod.Options)
+        method(HttpMethod.Put)
+        method(HttpMethod.Delete)
+        method(HttpMethod.Patch)
+        header(HttpHeaders.Authorization)
+        allowCredentials = true
+        anyHost() // @TODO: Don't do this in production if possible.
+    }
 
     routing {
-        static("openapi") {
-            defaultResource("index.html", "openapi")
-        }
 
         route("/tournament-players") {
             get {
@@ -95,6 +103,14 @@ fun Application.routes() {
                 }
             }
         }
+        static("openapi") {
+            defaultResource("index.html", "openapi")
+        }
+        static("/") {
+            resources("dist")
+            defaultResource("index.html", "dist")
+        }
+
     }
 }
 

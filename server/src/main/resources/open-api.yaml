@@ -35,6 +35,7 @@ paths:
           description: Invalid nickname supplied
           content: { }
         201:
+          description: successful operation
           content:
             application/json:
               schema:
