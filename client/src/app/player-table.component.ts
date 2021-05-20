@@ -40,12 +40,11 @@ export class PlayerTableComponent implements AfterViewInit {
         map(data => {
           // Flip flag to show that loading has finished.
           this.isLoadingResults = false;
-          this.resultsLength = data.length;
-          return data;
+          this.resultsLength = data.count;
+          return data.players;
         }),
         catchError(() => {
           this.isLoadingResults = false;
-          // Catch if the GitHub API has reached its rate limit. Return empty data.
           return observableOf([]);
         })
       );
@@ -57,8 +56,8 @@ export class PlayerTableComponent implements AfterViewInit {
 }
 
 export interface PlayerResult {
-  items: Player[];
-  total_count: number;
+  players: Player[];
+  count: number;
 }
 
 export interface Player {
@@ -70,11 +69,11 @@ export interface Player {
 export class PlayerApi {
   constructor(private _httpClient: HttpClient) {}
 
-  getPlayer(sort: string, order: string, page: number): Observable<Player[]> {
+  getPlayer(sort: string, order: string, page: number): Observable<PlayerResult> {
     const href = 'http://localhost:8080/tournament-players';
     const requestUrl =
-        `${href}?q=repo:angular/components&sort=${sort}&order=${order}&page=${page + 1}`;
-    return this._httpClient.get<Player[]>(requestUrl);
+        `${href}?q=repo:angular/components&page=${page + 1}`;
+    return this._httpClient.get<PlayerResult>(requestUrl);
   }
 }
 

@@ -28,6 +28,9 @@ import io.ktor.routing.routing
 import io.ktor.util.pipeline.PipelineContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import org.castlebet.chess.domain.GetPlayerResult
+import org.castlebet.chess.domain.Nickname
+import org.castlebet.chess.domain.Page
 import org.castlebet.chess.domain.PlayerId
 import org.castlebet.chess.domain.PlayerResult
 import org.castlebet.chess.domain.PlayerToCreate
@@ -77,7 +80,7 @@ fun Application.routes() {
 
         route("/tournament-players") {
             get {
-                call.respond(HttpStatusCode.OK, players.getAll().map { it.toJson() })
+                call.respond(HttpStatusCode.OK, players.getAll(call.toPage()).toJson())
             }
             post {
                 val request = call.receive(JsonPlayerToCreate::class)
@@ -115,13 +118,15 @@ fun Application.routes() {
 }
 
 private fun ApplicationCall.pathParamToPlayerId() = PlayerId(parameters["id"] ?: throw IllegalArgumentException("id path param is mandatory"))
+private fun ApplicationCall.toPage() = request.queryParameters["page"]?.let { Page(it) }
 
-private fun PlayerToCreate.toJson() = JsonPlayerCreated(playerId.value, nickname)
-private fun PlayerResult.toJson() = JsonPlayerResult(id.value, nickname, score.value)
+private fun PlayerToCreate.toJson() = JsonPlayerCreated(playerId.value, nickname.value)
+private fun PlayerResult.toJson() = JsonPlayerResult(id.value, nickname.value, score.value)
+private fun GetPlayerResult.toJson() = JsonGetPlayerResult(count, players.map { it.toJson() })
 
 @Serializable
 data class JsonPlayerToCreate(val nickname: String) {
-    fun toPlayer() = PlayerToCreate(nickname)
+    fun toPlayer() = PlayerToCreate(Nickname(nickname))
 }
 
 @Serializable
@@ -132,3 +137,5 @@ data class JsonScore(val score: Int)
 
 @Serializable
 data class JsonPlayerResult(val _id: String, val nickname: String, val score: Int)
+@Serializable
+data class JsonGetPlayerResult(val count: Int, val players: List<JsonPlayerResult>)

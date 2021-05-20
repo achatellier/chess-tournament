@@ -2,6 +2,8 @@ package org.castlebet.chess.infrastructure.persistence
 
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.WithAssertions
+import org.castlebet.chess.domain.Nickname
+import org.castlebet.chess.domain.Page
 import org.castlebet.chess.domain.PlayerId
 import org.castlebet.chess.domain.PlayerResult
 import org.castlebet.chess.domain.PlayerToCreate
@@ -54,14 +56,27 @@ internal class MongoPlayersTest : WithAssertions {
     }
 
     @Test
+    fun `add should prevent adding player with a nickname already used`() {
+        runBlocking {
+            mongoPlayers.add(PlayerToCreate(Nickname("superman"), PlayerId("1")))
+            assertThatThrownBy {
+                runBlocking {
+                    mongoPlayers.add(PlayerToCreate(Nickname("superman"), PlayerId("2")))
+                }
+            }.hasMessage("Nickname superman already exists")
+        }
+    }
+
+
+    @Test
     fun `get all should return all players`() {
         runBlocking {
-            assertThat(mongoPlayers.getAll()).isEmpty()
-            mongoPlayers.add(PlayerToCreate("superman", PlayerId("1")))
-            mongoPlayers.add(PlayerToCreate("batman", PlayerId("2")))
-            val result = mongoPlayers.getAll()
-            assertThat(result.size).isEqualTo(2)
-            assertThat(result.first()).isEqualTo(PlayerResult(PlayerId("1"), "superman", Score(0)))
+            assertThat(mongoPlayers.getAll().players).isEmpty()
+            mongoPlayers.add(PlayerToCreate(Nickname("superman"), PlayerId("1")))
+            mongoPlayers.add(PlayerToCreate(Nickname("batman"), PlayerId("2")))
+            val result = mongoPlayers.getAll(Page("1"))
+            assertThat(result.players.size).isEqualTo(2)
+            assertThat(result.players.first()).isEqualTo(PlayerResult(PlayerId("1"), Nickname("superman"), Score(0)))
         }
     }
 
@@ -75,10 +90,10 @@ internal class MongoPlayersTest : WithAssertions {
     @Test
     fun `update should update score`() {
         runBlocking {
-            mongoPlayers.add(PlayerToCreate("batman", PlayerId("2")))
+            mongoPlayers.add(PlayerToCreate(Nickname("batman"), PlayerId("2")))
             mongoPlayers.update(PlayerToUpdate(PlayerId("2"), Score(10)))
             val result = mongoPlayers.get(PlayerId("2"))
-            assertThat(result).isEqualTo(PlayerResult(PlayerId("2"), "batman", Score(10)))
+            assertThat(result).isEqualTo(PlayerResult(PlayerId("2"), Nickname("batman"), Score(10)))
         }
     }
 
@@ -93,13 +108,13 @@ internal class MongoPlayersTest : WithAssertions {
     @Test
     fun `clear should remove all players`() {
         runBlocking {
-            assertThat(mongoPlayers.getAll()).isEmpty()
-            mongoPlayers.add(PlayerToCreate("superman", PlayerId("1")))
-            mongoPlayers.add(PlayerToCreate("batman", PlayerId("2")))
+            assertThat(mongoPlayers.getAll().players).isEmpty()
+            mongoPlayers.add(PlayerToCreate(Nickname("superman"), PlayerId("1")))
+            mongoPlayers.add(PlayerToCreate(Nickname("batman"), PlayerId("2")))
             val result = mongoPlayers.getAll()
-            assertThat(result.size).isEqualTo(2)
+            assertThat(result.players.size).isEqualTo(2)
             mongoPlayers.clear()
-            assertThat(mongoPlayers.getAll()).isEmpty()
+            assertThat(mongoPlayers.getAll().players).isEmpty()
         }
     }
 

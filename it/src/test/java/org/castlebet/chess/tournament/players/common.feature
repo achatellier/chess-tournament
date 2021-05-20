@@ -8,7 +8,7 @@ Feature: Common features
     Then status 204
     When method get
     Then status 200
-    And match response == '#[0]'
+    And match response.players == '#[0]'
 
   @Init
   Scenario: init rank

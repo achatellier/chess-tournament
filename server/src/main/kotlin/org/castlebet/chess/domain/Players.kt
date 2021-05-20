@@ -6,9 +6,11 @@ interface Players {
 
     suspend fun get(id: PlayerId): PlayerResult?
 
+    suspend fun get(nickname: Nickname): PlayerResult?
+
     suspend fun update(player: PlayerToUpdate): UpdatePlayerResult
 
-    suspend fun getAll(): List<PlayerResult>
+    suspend fun getAll(page: Page? = null): GetPlayerResult
 
     suspend fun clear()
 }
