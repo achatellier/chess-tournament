@@ -18,8 +18,8 @@ Feature: Player management
     Then status 201
     And request { nickname: "superman" }
     When method post
-    Then status 409
-    And match response contains A user with nickname superman already exists
+    Then status 400
+    And match response == "Nickname superman already exists"
 
   Scenario Outline: Post with <request> should return bad request
 

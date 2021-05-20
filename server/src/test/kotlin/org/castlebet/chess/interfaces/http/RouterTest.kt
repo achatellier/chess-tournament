@@ -16,6 +16,9 @@ import io.mockk.mockk
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.assertj.core.api.WithAssertions
+import org.castlebet.chess.domain.GetPlayerResult
+import org.castlebet.chess.domain.Nickname
+import org.castlebet.chess.domain.Page
 import org.castlebet.chess.domain.PlayerId
 import org.castlebet.chess.domain.PlayerResult
 import org.castlebet.chess.domain.PlayerToCreate
@@ -71,7 +74,9 @@ internal class RouterTest : WithAssertions {
     @ParameterizedTest
     fun `should return bad request when payload is invalid `(body: String) {
         testApp {
-            coEvery { players.add(any()) } returns PlayerToCreate("nickname", PlayerId("2"))
+            coEvery { players.add(any()) } returns PlayerToCreate(
+                Nickname("nickname"), PlayerId("2")
+            )
 
             val call = handleRequest(HttpMethod.Post, "/tournament-players") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -86,7 +91,7 @@ internal class RouterTest : WithAssertions {
     @Test
     fun `should return OK when add repository response is successful and payload is valid`() {
         testApp {
-            coEvery { players.add(any()) } returns PlayerToCreate("nickname", PlayerId("2"))
+            coEvery { players.add(any()) } returns PlayerToCreate(Nickname("nickname"), PlayerId("2"))
 
             val body = """{"nickname": "anthony"}"""
             val call = handleRequest(HttpMethod.Post, "/tournament-players") {
@@ -100,22 +105,46 @@ internal class RouterTest : WithAssertions {
         }
     }
 
+    @ValueSource(
+        strings = [
+            "Z",
+            "",
+            "-1",
+            "null"]
+    )
+    @ParameterizedTest
+    fun `should return bad request when page is not valid for getAll `(page: String) {
+        testApp {
+            val call = handleRequest(HttpMethod.Get, "/tournament-players?page=$page")
+            with(call) {
+                assertThat(response.status()).isEqualTo(HttpStatusCode.BadRequest)
+            }
+        }
+    }
+
+
     @Test
     fun `should return OK when getAll repository response is successful and payload is valid`() {
         testApp {
-            coEvery { players.getAll() } returns listOf(
-                PlayerResult(PlayerId("1"), "superman", Score(15)),
-                PlayerResult(PlayerId("42"), "aquaman", Score(123789))
+            coEvery { players.getAll(Page("1")) } returns GetPlayerResult(
+                2,
+                listOf(
+                    PlayerResult(PlayerId("1"), Nickname("superman"), Score(15)),
+                    PlayerResult(PlayerId("42"), Nickname("aquaman"), Score(123789))
+                )
             )
 
-            val call = handleRequest(HttpMethod.Get, "/tournament-players")
+            val call = handleRequest(HttpMethod.Get, "/tournament-players?page=1")
             with(call) {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.OK)
                 assertThat(response.content).isEqualTo(
                     Json.encodeToString(
-                        listOf(
-                            JsonPlayerResult("1", "superman", 15),
-                            JsonPlayerResult("42", "aquaman", 123789)
+                        JsonGetPlayerResult(
+                            2,
+                            listOf(
+                                JsonPlayerResult("1", "superman", 15),
+                                JsonPlayerResult("42", "aquaman", 123789)
+                            )
                         )
                     )
                 )
@@ -162,7 +191,7 @@ internal class RouterTest : WithAssertions {
         testApp {
             coEvery {
                 players.get(PlayerId("1"))
-            } returns PlayerResult(PlayerId("1"), "superman", Score(15))
+            } returns PlayerResult(PlayerId("1"), Nickname("superman"), Score(15))
 
             val call = handleRequest(HttpMethod.Get, "/tournament-players/1")
             with(call) {
