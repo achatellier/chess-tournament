@@ -1,61 +1,57 @@
 package org.castlebet.chess.domain
 
 import java.util.UUID
+import kotlin.math.min
 
-data class PlayerToCreate(val nickname: Nickname, val playerId: PlayerId = PlayerId())
-data class PlayerToUpdate(val id: PlayerId, val score: Score)
+data class PlayerToCreate(val nickname: Nickname, val id: PlayerId = PlayerId())
+data class PlayerToUpdate(val id: PlayerId, val score: ScoreToUpdate)
 
-data class GetPlayerResult(val count: Int, val players: List<PlayerResult>)
-data class PlayerResult(val id: PlayerId, val nickname: Nickname, val score: Score) {
+data class CreatedPlayerResult(val transactionId: Int, val createdPlayer: Player, val players: List<Player>)
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        other as PlayerResult
-        if (id != other.id) return false
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return id.hashCode()
-    }
+sealed class UpdatePlayerResult {
+    data class Success(val transactionId: Int, val players: List<Player>) : UpdatePlayerResult()
+    object NotFound : UpdatePlayerResult()
 }
 
+
+data class Player(val id: PlayerId, val nickname: Nickname, val score: Score?)
+
 data class PlayerId(val value: String = UUID.randomUUID().toString())
-data class Nickname(val value: String) {
+data class Nickname(val value: String) : Comparable<Nickname> {
     init {
         require(value.isNotBlank()) { "Nickname must not be empty" }
     }
+
+    override fun compareTo(other: Nickname) = compareValues(value, other.value)
 }
-data class Score(val value: Int) {
+
+data class ScoreToUpdate(val value: Int) {
     init {
         require(value >= 0) { "A player's score should be a positive number" }
     }
 }
 
-class Page(stringValue: String) {
-    val value: Int = Integer.valueOf(stringValue)
+data class Score(val value: Int?) : Comparable<Score> {
+    override fun compareTo(other: Score) = compareValues(value, other.value)
+}
 
+data class Rank(val value: Int) {
+    operator fun plus(other: Int) = Rank(value + other)
+}
+
+class Page(stringValue: String = "1") {
     init {
-        require(value >= 1) { "A page value should be a number >= 1" }
+        try {
+            require(Integer.valueOf(stringValue) >= 1)
+        } catch (e: Exception) {
+            throw IllegalArgumentException("A page value should be a number >= 1")
+        }
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        other as Page
-        if (value != other.value) return false
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return value
-    }
+    val value: Int = Integer.valueOf(stringValue)
+    val pageSize = 30
 
 }
 
-
-sealed class UpdatePlayerResult {
-    object Success : UpdatePlayerResult()
-    object NotFound : UpdatePlayerResult()
-}
+fun <T> List<T>?.subList(page: Page) =
+    this?.slice((page.value.minus(1).times(page.pageSize)) until min(page.pageSize * page.value, size)) ?: emptyList()

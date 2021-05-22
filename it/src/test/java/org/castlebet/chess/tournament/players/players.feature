@@ -46,12 +46,12 @@ Feature: Player management
     When method post
     When method get
     Then status 200
-    And match response[0].nickname == "batman"
-    And match response[0].score == '#notpresent'
-    And match response[0].rank == '#notpresent'
-    And match response[1].nickname == "superman"
-    And match response[1].score == '#notpresent'
-    And match response[1].rank == '#notpresent'
+    And match response.players[0].nickname == "batman"
+    And match response.players[0].score == null
+    And match response.players[0].rank == null
+    And match response.players[1].nickname == "superman"
+    And match response.players[1].score == null
+    And match response.players[1].rank == null
 
 
   Scenario: Single player should be retrieved with get
@@ -65,7 +65,7 @@ Feature: Player management
     When method get
     Then status 200
     And match response.nickname == "superman"
-    And match response.score == '#notpresent'
+    And match response.score == null
 
   Scenario: Single player with score should be retrieved with get
 
@@ -111,10 +111,11 @@ Feature: Player management
     Given url apiUrl.chess + "tournament-players"
     When method get
     Then status 200
-    And match response[0].nickname == "superman"
-    And match response[0].score == '#notpresent'
-    And match response[1].nickname == "batman"
-    And match response[1].score == 25
+    And match response.players[0].nickname == "batman"
+    And match response.players[0].score == 25
+    And match response.players[0].rank == 1
+    And match response.players[1].nickname == "superman"
+    And match response.players[1].score == null
 
   Scenario Outline: Patch with <request> should return bad request
 

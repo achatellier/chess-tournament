@@ -14,7 +14,7 @@ import {catchError, map, startWith, switchMap} from 'rxjs/operators';
   templateUrl: 'player-table.component.html',
 })
 export class PlayerTableComponent implements AfterViewInit {
-  displayedColumns: string[] = ['id', 'nickname', 'score'];
+  displayedColumns: string[] = ['rank', 'id', 'nickname', 'score'];
   playerApi: PlayerApi | null;
   filteredAndPagedIssues: Observable<Player[]>;
 
@@ -34,8 +34,7 @@ export class PlayerTableComponent implements AfterViewInit {
         startWith({}),
         switchMap(() => {
           this.isLoadingResults = true;
-          return this.playerApi!.getPlayer(
-            this.sort.active, this.sort.direction, this.paginator.pageIndex);
+          return this.playerApi!.getPlayer(this.paginator.pageIndex);
         }),
         map(data => {
           // Flip flag to show that loading has finished.
@@ -64,13 +63,14 @@ export interface Player {
   _id: string;
   nickname: string;
   score: number;
+  rank: number;
 }
 
 export class PlayerApi {
   constructor(private _httpClient: HttpClient) {}
 
-  getPlayer(sort: string, order: string, page: number): Observable<PlayerResult> {
-    const href = 'http://localhost:8080/tournament-players';
+  getPlayer(page: number): Observable<PlayerResult> {
+    const href = '/tournament-players';
     const requestUrl =
         `${href}?q=repo:angular/components&page=${page + 1}`;
     return this._httpClient.get<PlayerResult>(requestUrl);

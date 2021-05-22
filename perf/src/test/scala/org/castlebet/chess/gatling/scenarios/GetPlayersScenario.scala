@@ -20,7 +20,7 @@ object GetPlayersScenario {
 
 
   val getRanksScenario: ScenarioBuilder =
-    Predef.scenario("Verify Blade Scenario")
+    Predef.scenario("Get player ranks")
       .exec(getRanks)
       .exec()
 

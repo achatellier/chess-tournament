@@ -30,6 +30,8 @@ object CreatePlayersScenario {
   val initIds: ChainBuilder = {
     exec(
       session => {
+        //NOT_GREAT Not a great idea to use a ListBuffer, as it is not thread safe, there is a better way to do this
+        //It is "working" only because the creatin rate is not high
         ids += session("id").as[String]
         session
       }
