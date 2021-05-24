@@ -1,7 +1,9 @@
 package org.castlebet.chess.infrastructure.persistence
 
+import com.mongodb.client.model.Filters.elemMatch
 import com.mongodb.client.model.Filters.eq
 import com.mongodb.client.model.Filters.lt
+import com.mongodb.client.model.Projections
 import com.mongodb.client.model.ReplaceOptions
 import com.mongodb.client.model.Updates
 import org.castlebet.chess.domain.Nickname
@@ -13,7 +15,6 @@ import org.castlebet.chess.domain.RankedPlayers
 import org.castlebet.chess.domain.RankedPlayersResult
 import org.castlebet.chess.domain.Score
 import org.castlebet.chess.domain.UpdateRanksRequest
-import org.castlebet.chess.domain.subList
 import org.litote.kmongo.EMPTY_BSON
 import org.litote.kmongo.coroutine.CoroutineClient
 import org.litote.kmongo.coroutine.CoroutineCollection
@@ -38,40 +39,53 @@ class MongoRankedPlayers(
                         lt(Keys.TRANSACTION_ID, request.transactionId)
                     )
                 },
-                TournamentRanksDb(DEFAULT_TOURNAMENT_ID, request.rankedPlayers.map { it.toDb() }, request.transactionId),
+                TournamentRanksDb(DEFAULT_TOURNAMENT_ID, request.rankedPlayers.map { it.toDb() }, request.transactionId, request.rankedPlayers.size),
                 ReplaceOptions().upsert(request.upsertNeeded())
             )
     }
 
-    suspend fun get(predicate: (PlayerRankDb) -> Boolean) =
-        playerRanks.findOne(eq(Keys.TOURNAMENT_ID, DEFAULT_TOURNAMENT_ID))
-            ?.players?.also { println(it.toString()) }
-            ?.firstOrNull(predicate)
+    override suspend fun get(id: PlayerId) =
+        playerRanks.find(
+            elemMatch(Keys.PLAYERS, eq(Keys.ID, id.value))
+        ).projection(
+            Projections.fields(
+                Projections.elemMatch(Keys.PLAYERS, eq(Keys.ID, id.value)),
+                eq(Keys.TOURNAMENT_ID, 1),
+                eq(Keys.TRANSACTION_ID, 1),
+            )
+        )
+            .first()
+            ?.players
+            ?.first()
             ?.toRanksResult()
 
-
-    override suspend fun get(id: PlayerId): RankedPlayer? = get { it._id == id.value }
 
     override suspend fun clear() {
         playerRanks.deleteMany(EMPTY_BSON)
     }
 
-    override suspend fun getAll(page: Page): RankedPlayersResult {
-        val players = playerRanks.findOne(eq(Keys.TOURNAMENT_ID, DEFAULT_TOURNAMENT_ID))?.toPlayerResult()
-        return RankedPlayersResult(
-            players?.size ?: 0,
-            players.subList(page)
+    override suspend fun getAll(page: Page) = playerRanks
+        .find(eq(Keys.TOURNAMENT_ID, DEFAULT_TOURNAMENT_ID))
+        .projection(
+            Projections.fields(
+                Projections.slice(Keys.PLAYERS, (page.value - 1) * page.pageSize, page.pageSize),
+                eq(Keys.COUNT, 1),
+                eq(Keys.TOURNAMENT_ID, 1),
+                eq(Keys.TRANSACTION_ID, 1),
+            )
         )
+        .first()?.also { println(it) }
+        ?.toPlayerResult()
+        ?: RankedPlayersResult(0, emptyList())
+
+
+    data class PlayerRankDb(val _id: String, val nickname: String, val score: Int?, val rank: Int?, val index: Int) {
+        fun toRanksResult() = RankedPlayer(PlayerId(_id), Nickname(nickname), score?.let { Score(it) }, rank?.let { Rank(it) }, index)
     }
 
-
-    data class PlayerRankDb(val _id: String, val nickname: String, val score: Int?, val rank: Int?) {
-        fun toRanksResult() = RankedPlayer(PlayerId(_id), Nickname(nickname), score?.let { Score(it) }, rank?.let { Rank(it) })
-    }
-
-    private fun RankedPlayer.toDb() = PlayerRankDb(id.value, nickname.value, score?.value, rank?.value)
-    data class TournamentRanksDb(val tournamentId: String, val players: List<PlayerRankDb>, val transactionId: Int) {
-        fun toPlayerResult() = players.map { it.toRanksResult() }
+    private fun RankedPlayer.toDb() = PlayerRankDb(id.value, nickname.value, score?.value, rank?.value, index)
+    data class TournamentRanksDb(val tournamentId: String, val players: List<PlayerRankDb>?, val transactionId: Int, val count: Int) {
+        fun toPlayerResult() = RankedPlayersResult(count, players?.map { it.toRanksResult() } ?: emptyList())
     }
 
 }

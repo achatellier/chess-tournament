@@ -28,6 +28,8 @@ fun CoroutineClient.toPlayerCollection(): PlayerCollection = getDatabase("tourna
 class Keys {
     companion object {
         const val ID = "_id"
+        const val INDEX = "index"
+        const val COUNT = "count"
         const val TOURNAMENT_ID = "tournamentId"
         const val TRANSACTION_ID = "transactionId"
         const val SCORE = "score"

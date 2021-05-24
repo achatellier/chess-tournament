@@ -38,4 +38,5 @@ Feature: Tests dedicated to ranking
       | 0         | "superman" | 5          |  | "superman" | 1      | 5       | "batman"   | null   | null    | "harley"   | null   | null    | "joker"  | null   | null    | "robin" | null   | null    |
       | 3         | "joker"    | 5          |  | "joker"    | 1      | 5       | "superman" | 1      | 5       | "batman"   | null   | null    | "harley" | null   | null    | "robin" | null   | null    |
       | 2         | "batman"   | 15         |  | "batman"   | 1      | 15      | "joker"    | 2      | 5       | "superman" | 2      | 5       | "harley" | null   | null    | "robin" | null   | null    |
+      | 4         | "harley"   | 2          |  | "batman"   | 1      | 15      | "joker"    | 2      | 5       | "superman" | 2      | 5       | "harley" | 4      | 2       | "robin" | null   | null    |
 

@@ -143,8 +143,8 @@ internal class RouterTest : WithAssertions {
             coEvery { rankedPlayers.getAll(any()) } returns RankedPlayersResult(
                 2,
                 listOf(
-                    RankedPlayer(PlayerId("1"), Nickname("superman"), Score(15), Rank(1)),
-                    RankedPlayer(PlayerId("42"), Nickname("aquaman"), Score(123789), null)
+                    RankedPlayer(PlayerId("1"), Nickname("superman"), Score(15), Rank(1), 0),
+                    RankedPlayer(PlayerId("42"), Nickname("aquaman"), Score(123789), null, 1)
                 )
             )
 
@@ -209,7 +209,7 @@ internal class RouterTest : WithAssertions {
         testApp {
             coEvery {
                 rankedPlayers.get(PlayerId("1"))
-            } returns RankedPlayer(PlayerId("1"), Nickname("superman"), Score(15), Rank(15))
+            } returns RankedPlayer(PlayerId("1"), Nickname("superman"), Score(15), Rank(15), 0)
 
             val call = handleRequest(HttpMethod.Get, "/tournament-players/1")
             with(call) {

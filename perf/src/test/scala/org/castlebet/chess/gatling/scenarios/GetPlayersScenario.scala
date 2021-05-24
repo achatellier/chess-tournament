@@ -6,6 +6,7 @@ import io.gatling.core.structure.{ChainBuilder, ScenarioBuilder}
 import io.gatling.http.Predef.{http, status, _}
 import org.castlebet.chess.gatling.config.Config
 
+import java.util.concurrent.TimeUnit
 import scala.util.Random
 
 object GetPlayersScenario {
@@ -15,7 +16,7 @@ object GetPlayersScenario {
       http("Get player ranks")
         .get(session => Config.chess_url + "/tournament-players")
         .check(status is 200))
-      .pause(1, 2)
+      .pause("1000", "1200", TimeUnit.MILLISECONDS)
   }
 
 

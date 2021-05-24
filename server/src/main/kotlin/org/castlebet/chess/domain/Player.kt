@@ -35,9 +35,7 @@ data class Score(val value: Int?) : Comparable<Score> {
     override fun compareTo(other: Score) = compareValues(value, other.value)
 }
 
-data class Rank(val value: Int) {
-    operator fun plus(other: Int) = Rank(value + other)
-}
+data class Rank(val value: Int)
 
 class Page(stringValue: String = "1") {
     init {
@@ -50,8 +48,6 @@ class Page(stringValue: String = "1") {
 
     val value: Int = Integer.valueOf(stringValue)
     val pageSize = 30
-
+    fun toStartIndex() = (value - 1) * pageSize
+    fun toEndIndex() = pageSize * value - 1
 }
-
-fun <T> List<T>?.subList(page: Page) =
-    this?.slice((page.value.minus(1).times(page.pageSize)) until min(page.pageSize * page.value, size)) ?: emptyList()

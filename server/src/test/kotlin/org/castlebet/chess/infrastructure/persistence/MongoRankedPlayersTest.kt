@@ -58,7 +58,7 @@ internal class MongoRankedPlayersTest : WithAssertions {
     @Test
     fun `gte should return null for an unknown player`() {
         runBlocking {
-            mongoPlayers.update(UpdateRanksRequest(0, listOf(RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1)))))
+            mongoPlayers.update(UpdateRanksRequest(0, listOf(RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1), 0))))
             assertThat(mongoPlayers.get(PlayerId("unknwon"))).isNull()
         }
     }
@@ -67,7 +67,7 @@ internal class MongoRankedPlayersTest : WithAssertions {
     @Test
     fun `upsert should add ranked players on an empty database`() {
         runBlocking {
-            mongoPlayers.update(UpdateRanksRequest(0, listOf(RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1)))))
+            mongoPlayers.update(UpdateRanksRequest(0, listOf(RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1), 0))))
             val result = mongoPlayers.get(PlayerId("1"))
             assertThat(result?.id).isEqualTo(PlayerId("1"))
             assertThat(result?.nickname).isEqualTo( Nickname("name"))
@@ -83,7 +83,7 @@ internal class MongoRankedPlayersTest : WithAssertions {
                 UpdateRanksRequest(
                     1,
                     listOf(
-                        RankedPlayer(PlayerId("2"), Nickname("name2"), Score(5), Rank(2))
+                        RankedPlayer(PlayerId("2"), Nickname("name2"), Score(5), Rank(2), 0)
                     )
                 )
             )
@@ -91,15 +91,15 @@ internal class MongoRankedPlayersTest : WithAssertions {
                 UpdateRanksRequest(
                     2,
                     listOf(
-                        RankedPlayer(PlayerId("1"), Nickname("name1"), Score(10), Rank(1)),
-                        RankedPlayer(PlayerId("2"), Nickname("name2"), Score(18), Rank(3))
+                        RankedPlayer(PlayerId("1"), Nickname("name1"), Score(10), Rank(1),0),
+                        RankedPlayer(PlayerId("2"), Nickname("name2"), Score(18), Rank(3), 1)
                     )
                 )
             )
             val result = mongoPlayers.get(PlayerId("2"))
-            assertThat(result?.score).isEqualTo(Score(18))
-            assertThat(result?.rank).isEqualTo(Rank(3))
             assertThat(result?.nickname).isEqualTo(Nickname("name2"))
+            assertThat(result?.rank).isEqualTo(Rank(3))
+            assertThat(result?.score).isEqualTo(Score(18))
 
         }
     }
@@ -112,7 +112,7 @@ internal class MongoRankedPlayersTest : WithAssertions {
                 UpdateRanksRequest(
                     2,
                     listOf(
-                        RankedPlayer(PlayerId("2"), Nickname("name"), Score(52), Rank(2))
+                        RankedPlayer(PlayerId("2"), Nickname("name"), Score(52), Rank(2), 0)
                     )
                 )
             )
@@ -120,8 +120,8 @@ internal class MongoRankedPlayersTest : WithAssertions {
                 UpdateRanksRequest(
                     transactionId,
                     listOf(
-                        RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1)),
-                        RankedPlayer(PlayerId("2"), Nickname("name"), Score(18), Rank(3))
+                        RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1), 0),
+                        RankedPlayer(PlayerId("2"), Nickname("name"), Score(18), Rank(3), 1)
                     )
                 )
             )
@@ -141,7 +141,7 @@ internal class MongoRankedPlayersTest : WithAssertions {
                 UpdateRanksRequest(
                     0,
                     listOf(
-                        RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1)),
+                        RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1), 0),
                     )
                 )
             )
@@ -161,13 +161,13 @@ internal class MongoRankedPlayersTest : WithAssertions {
                 UpdateRanksRequest(
                     0,
                     listOf(
-                        RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1)),
+                        RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1), 0),
                     )
                 )
             )
             val result = mongoPlayers.getAll()
             assertThat(result.rankedPlayers.size).isEqualTo(1)
-            assertThat(result.rankedPlayers[0]).isEqualTo(RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1)))
+            assertThat(result.rankedPlayers[0]).isEqualTo(RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1), 0))
         }
     }
 
@@ -175,17 +175,17 @@ internal class MongoRankedPlayersTest : WithAssertions {
     fun `getAll should handle pagination`() {
         runBlocking {
             mongoPlayers.update(UpdateRanksRequest(0,
-                listOf(RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1)))
+                listOf(RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1), 0))
             ))
 
             mongoPlayers.update(UpdateRanksRequest(1,
-                IntRange(1, 31).map { RankedPlayer(PlayerId("" + it), Nickname("name"), Score(10), Rank(1)) }
+                IntRange(1, 31).map { RankedPlayer(PlayerId("" + it), Nickname("name"), Score(10), Rank(1), it - 1) }
             ))
-            val result = mongoPlayers.getAll()
-            assertThat(result.count).isEqualTo(31)
+            val result = mongoPlayers.getAll().also { println(it) }
             assertThat(result.rankedPlayers.size).isEqualTo(30)
-            assertThat(result.rankedPlayers[0]).isEqualTo(RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1)))
-            assertThat(result.rankedPlayers[1]).isEqualTo(RankedPlayer(PlayerId("2"), Nickname("name"), Score(10), Rank(1)))
+            assertThat(result.rankedPlayers[0]).isEqualTo(RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1), 0))
+            assertThat(result.rankedPlayers[1]).isEqualTo(RankedPlayer(PlayerId("2"), Nickname("name"), Score(10), Rank(1), 1))
+            assertThat(result.count).isEqualTo(31)
         }
     }
 
