@@ -28,16 +28,20 @@ import io.ktor.routing.routing
 import io.ktor.util.pipeline.PipelineContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
-import org.castlebet.chess.domain.GetPlayerResult
+import org.castlebet.chess.domain.RankedPlayersResult
 import org.castlebet.chess.domain.Nickname
 import org.castlebet.chess.domain.Page
+import org.castlebet.chess.domain.Player
 import org.castlebet.chess.domain.PlayerId
-import org.castlebet.chess.domain.PlayerResult
+import org.castlebet.chess.domain.RankedPlayer
 import org.castlebet.chess.domain.PlayerToCreate
 import org.castlebet.chess.domain.PlayerToUpdate
 import org.castlebet.chess.domain.Players
-import org.castlebet.chess.domain.Score
+import org.castlebet.chess.domain.RankedPlayers
+import org.castlebet.chess.domain.ScoreToUpdate
 import org.castlebet.chess.domain.UpdatePlayerResult
+import org.castlebet.chess.domain.UpdateRanksRequest
+import org.castlebet.chess.domain.toRanked
 import org.koin.ktor.ext.inject
 import org.slf4j.event.Level
 
@@ -58,6 +62,7 @@ private fun handleError(): suspend PipelineContext<Unit, ApplicationCall>.(Throw
 
 fun Application.routes() {
     val players: Players by inject()
+    val rankedPlayers: RankedPlayers by inject()
     install(CallLogging) {
         level = Level.TRACE
     }
@@ -80,29 +85,31 @@ fun Application.routes() {
 
         route("/tournament-players") {
             get {
-                call.respond(HttpStatusCode.OK, players.getAll(call.toPage()).toJson())
+                call.respond(HttpStatusCode.OK, rankedPlayers.getAll(call.toPage() ?: Page()).toJson())
             }
             post {
-                val request = call.receive(JsonPlayerToCreate::class)
-                call.respond(HttpStatusCode.Created, players.add(request.toPlayer()).toJson())
+                val creationResult = players.add(call.receive(JsonPlayerToCreate::class).toPlayer())
+                call.respond(HttpStatusCode.Created, creationResult.createdPlayer.toJson())
+                    .also { rankedPlayers.update(creationResult.toRanked()) }
             }
             delete {
                 players.clear()
+                rankedPlayers.clear()
                 call.respond(HttpStatusCode.NoContent)
             }
         }
         route("/tournament-players/{id}") {
             get {
-                players.get(call.pathParamToPlayerId())
+                rankedPlayers.get(call.pathParamToPlayerId())
                     ?.toJson()
                     ?.run { call.respond(HttpStatusCode.OK, this) }
                     ?: call.respond(HttpStatusCode.NotFound)
             }
             patch {
                 val request = call.receive(JsonScore::class)
-                when (players.update(PlayerToUpdate(call.pathParamToPlayerId(), Score(request.score)))) {
-                    UpdatePlayerResult.Success -> call.respond(HttpStatusCode.OK)
-                    UpdatePlayerResult.NotFound -> call.respond(HttpStatusCode.NotFound, "id ${call.pathParamToPlayerId().value}")
+                when (val result = players.update(PlayerToUpdate(call.pathParamToPlayerId(), ScoreToUpdate(request.score)))) {
+                    is UpdatePlayerResult.Success ->  call.respond(HttpStatusCode.OK).also { rankedPlayers.update(result.toRanked()) }
+                    is UpdatePlayerResult.NotFound -> call.respond(HttpStatusCode.NotFound, "id ${call.pathParamToPlayerId().value}")
                 }
             }
         }
@@ -120,9 +127,9 @@ fun Application.routes() {
 private fun ApplicationCall.pathParamToPlayerId() = PlayerId(parameters["id"] ?: throw IllegalArgumentException("id path param is mandatory"))
 private fun ApplicationCall.toPage() = request.queryParameters["page"]?.let { Page(it) }
 
-private fun PlayerToCreate.toJson() = JsonPlayerCreated(playerId.value, nickname.value)
-private fun PlayerResult.toJson() = JsonPlayerResult(id.value, nickname.value, score.value)
-private fun GetPlayerResult.toJson() = JsonGetPlayerResult(count, players.map { it.toJson() })
+private fun Player.toJson() = JsonPlayerCreated(id.value, nickname.value,)
+private fun RankedPlayer.toJson() = JsonPlayerResult(id.value, nickname.value, score?.value, rank?.value)
+private fun RankedPlayersResult.toJson() = JsonGetPlayerResult(count, rankedPlayers.map { it.toJson() })
 
 @Serializable
 data class JsonPlayerToCreate(val nickname: String) {
@@ -136,6 +143,6 @@ data class JsonPlayerCreated(val _id: String, val nickname: String)
 data class JsonScore(val score: Int)
 
 @Serializable
-data class JsonPlayerResult(val _id: String, val nickname: String, val score: Int)
+data class JsonPlayerResult(val _id: String, val nickname: String, val score: Int?, val rank: Int?)
 @Serializable
 data class JsonGetPlayerResult(val count: Int, val players: List<JsonPlayerResult>)

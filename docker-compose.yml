@@ -8,17 +8,9 @@ services:
       - "db"
     environment:
       - MONGO_SERVER=my-mongodb
-    networks:
-      - mongo_net
     build: .
   db:
     image: mongo
     container_name: my-mongodb
     ports:
       - "27017:27017"
-    networks:
-        - mongo_net
-
-networks:
-  mongo_net:
-    driver: bridge
