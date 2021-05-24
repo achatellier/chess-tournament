@@ -10,15 +10,15 @@ class ChessTournamentSimulation extends Simulation {
 
   private val updateScoreExec = UpdateScoreScenario.updateScoresScenario.inject(
     atOnceUsers(10),
-    rampUsers(80) during (30)
+    rampUsers(40) during (20)
   )
   private val getRanksExec = GetPlayersScenario.getRanksScenario.inject(
     atOnceUsers(100),
-    rampUsers(12000) during (20)
+    rampUsers(4000) during (20)
   )
 
   private val createPlayerExec = CreatePlayersScenario.createPlayerScenario.inject(
-    rampUsers(50) during (10)
+    rampUsers(1000) during (3)
   )
 
   setUp(

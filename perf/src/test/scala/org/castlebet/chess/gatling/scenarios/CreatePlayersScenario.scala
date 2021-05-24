@@ -1,18 +1,34 @@
 package org.castlebet.chess.gatling.scenarios
 
 import io.gatling.core.Predef
-import io.gatling.core.Predef.{exec, repeat, _}
+import io.gatling.core.Predef.{exec, _}
 import io.gatling.core.structure.{ChainBuilder, ScenarioBuilder}
 import io.gatling.http.Predef.{http, _}
 import org.castlebet.chess.gatling.config.Config
 
 import java.util.UUID
 import scala.collection.mutable.ListBuffer
-import scala.util.Random
+
+class SynchronizedListBuffer(val lb: ListBuffer[String]) {
+  def length(): Int = {
+    lb.length
+  }
+
+  def apply(i : scala.Int): String = {
+    lb(i)
+  }
+
+  def append(i: String) {
+    this.synchronized {
+      lb.append(i)
+    }
+  }
+}
+
 
 object CreatePlayersScenario {
 
-  var ids = new ListBuffer[String]()
+  var ids = new SynchronizedListBuffer(ListBuffer())
 
   val createPlayer: ChainBuilder = {
     exec(
@@ -24,13 +40,12 @@ object CreatePlayersScenario {
     )
   }
 
-
   val initIds: ChainBuilder = {
     exec(
       session => {
         //NOT_GREAT Not a great idea to use a ListBuffer, as it is not thread safe, there is a better way to do this
         //It is "working" only because the creatin rate is not high
-        ids += session("id").as[String]
+        ids.append(session("id").as[String])
         session
       }
     )
@@ -40,6 +55,5 @@ object CreatePlayersScenario {
     Predef.scenario("Create Scenario")
       .exec(createPlayer, initIds)
       .exec()
-
 
 }
