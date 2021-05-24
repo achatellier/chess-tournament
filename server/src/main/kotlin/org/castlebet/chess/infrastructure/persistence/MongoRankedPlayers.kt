@@ -74,7 +74,7 @@ class MongoRankedPlayers(
                 eq(Keys.TRANSACTION_ID, 1),
             )
         )
-        .first()?.also { println(it) }
+        .first()?
         ?.toPlayerResult()
         ?: RankedPlayersResult(0, emptyList())
 

@@ -46,7 +46,7 @@ https://docs.mongodb.com/manual/core/write-operations-atomicity/ but it is recom
 
 ### TransactionId
 
-The rank computation is done in 3 steps:
+The rank computation is done in 2 steps:
 1. Update a score player and read all scores from a single document (atomic)
 2. Compute and store all ranks in a single document (atomic)
 

@@ -181,7 +181,7 @@ internal class MongoRankedPlayersTest : WithAssertions {
             mongoPlayers.update(UpdateRanksRequest(1,
                 IntRange(1, 31).map { RankedPlayer(PlayerId("" + it), Nickname("name"), Score(10), Rank(1)) }
             ))
-            val result = mongoPlayers.getAll().also { println(it) }
+            val result = mongoPlayers.getAll()
             assertThat(result.rankedPlayers.size).isEqualTo(30)
             assertThat(result.rankedPlayers[0]).isEqualTo(RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1)))
             assertThat(result.rankedPlayers[1]).isEqualTo(RankedPlayer(PlayerId("2"), Nickname("name"), Score(10), Rank(1)))

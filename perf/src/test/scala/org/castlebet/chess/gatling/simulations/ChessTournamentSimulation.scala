@@ -18,7 +18,7 @@ class ChessTournamentSimulation extends Simulation {
   )
 
   private val createPlayerExec = CreatePlayersScenario.createPlayerScenario.inject(
-    rampUsers(100) during (3)
+    rampUsers(1000) during (3)
   )
 
   setUp(
