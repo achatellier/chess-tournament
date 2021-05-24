@@ -40,6 +40,7 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
+import java.lang.IllegalStateException
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class RouterTest : WithAssertions {
@@ -143,8 +144,8 @@ internal class RouterTest : WithAssertions {
             coEvery { rankedPlayers.getAll(any()) } returns RankedPlayersResult(
                 2,
                 listOf(
-                    RankedPlayer(PlayerId("1"), Nickname("superman"), Score(15), Rank(1), 0),
-                    RankedPlayer(PlayerId("42"), Nickname("aquaman"), Score(123789), null, 1)
+                    RankedPlayer(PlayerId("1"), Nickname("superman"), Score(15), Rank(1)),
+                    RankedPlayer(PlayerId("42"), Nickname("aquaman"), Score(123789), null)
                 )
             )
 
@@ -209,7 +210,7 @@ internal class RouterTest : WithAssertions {
         testApp {
             coEvery {
                 rankedPlayers.get(PlayerId("1"))
-            } returns RankedPlayer(PlayerId("1"), Nickname("superman"), Score(15), Rank(15), 0)
+            } returns RankedPlayer(PlayerId("1"), Nickname("superman"), Score(15), Rank(15))
 
             val call = handleRequest(HttpMethod.Get, "/tournament-players/1")
             with(call) {
@@ -262,6 +263,18 @@ internal class RouterTest : WithAssertions {
             val call = handleRequest(HttpMethod.Delete, "/tournament-players")
             with(call) {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.NoContent)
+            }
+        }
+    }
+
+    @Test
+    fun `should return server error when an error occurs`() {
+        testApp {
+            coEvery { rankedPlayers.get(any()) } throws IllegalStateException("error")
+
+            val call = handleRequest(HttpMethod.Get, "/tournament-players/id")
+            with(call) {
+                assertThat(response.status()).isEqualTo(HttpStatusCode.InternalServerError)
             }
         }
     }

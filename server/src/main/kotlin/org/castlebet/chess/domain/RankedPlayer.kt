@@ -1,7 +1,7 @@
 package org.castlebet.chess.domain
 
 data class RankedPlayersResult(val count: Int, val rankedPlayers: List<RankedPlayer>)
-data class RankedPlayer(val id: PlayerId, val nickname: Nickname, val score: Score?, val rank: Rank?, val index: Int) {
+data class RankedPlayer(val id: PlayerId, val nickname: Nickname, val score: Score?, val rank: Rank?) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -14,7 +14,7 @@ data class RankedPlayer(val id: PlayerId, val nickname: Nickname, val score: Sco
     override fun hashCode() = id.hashCode()
 }
 
-fun Player.toRankedPlayer(upperPlayer: RankedPlayer?, allUpperPlayers: List<RankedPlayer>) = RankedPlayer(id, nickname, score, computeRank(upperPlayer, allUpperPlayers), upperPlayer?.index?.plus(1) ?: 0)
+fun Player.toRankedPlayer(upperPlayer: RankedPlayer?, allUpperPlayers: List<RankedPlayer>) = RankedPlayer(id, nickname, score, computeRank(upperPlayer, allUpperPlayers))
 private fun Player.computeRank(upperPlayer: RankedPlayer?, allUpperPlayers: List<RankedPlayer>) = when {
     score == null -> null
     upperPlayer == null -> Rank(1)

@@ -79,11 +79,11 @@ class MongoRankedPlayers(
         ?: RankedPlayersResult(0, emptyList())
 
 
-    data class PlayerRankDb(val _id: String, val nickname: String, val score: Int?, val rank: Int?, val index: Int) {
-        fun toRanksResult() = RankedPlayer(PlayerId(_id), Nickname(nickname), score?.let { Score(it) }, rank?.let { Rank(it) }, index)
+    data class PlayerRankDb(val _id: String, val nickname: String, val score: Int?, val rank: Int?) {
+        fun toRanksResult() = RankedPlayer(PlayerId(_id), Nickname(nickname), score?.let { Score(it) }, rank?.let { Rank(it) })
     }
 
-    private fun RankedPlayer.toDb() = PlayerRankDb(id.value, nickname.value, score?.value, rank?.value, index)
+    private fun RankedPlayer.toDb() = PlayerRankDb(id.value, nickname.value, score?.value, rank?.value)
     data class TournamentRanksDb(val tournamentId: String, val players: List<PlayerRankDb>?, val transactionId: Int, val count: Int) {
         fun toPlayerResult() = RankedPlayersResult(count, players?.map { it.toRanksResult() } ?: emptyList())
     }
