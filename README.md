@@ -13,7 +13,7 @@ It's a very simple read-only frontend, to create some data, you can use the Gatl
 
 ### OpenAPI Documentation
 
-Available at http://127.0.0.1:8080/open-api
+Available at http://127.0.0.1:8080/openapi
 
 ## How to run Karate IT tests
 
