@@ -14,14 +14,14 @@ data class RankedPlayer(val id: PlayerId, val nickname: Nickname, val score: Sco
     override fun hashCode() = id.hashCode()
 }
 
-fun Player.toRankedPlayer(upperPlayer: RankedPlayer?) = RankedPlayer(id, nickname, score, computeRank(upperPlayer))
-private fun Player.computeRank(upperPlayer: RankedPlayer?) = when {
+fun Player.toRankedPlayer(upperPlayer: RankedPlayer?, allUpperPlayers: List<RankedPlayer>) = RankedPlayer(id, nickname, score, computeRank(upperPlayer, allUpperPlayers))
+private fun Player.computeRank(upperPlayer: RankedPlayer?, allUpperPlayers: List<RankedPlayer>) = when {
     score == null -> null
     upperPlayer == null -> Rank(1)
     upperPlayer.score == null -> null
     upperPlayer.rank == null -> null
     upperPlayer.score == score -> upperPlayer.rank
-    else -> upperPlayer.rank + 1
+    else -> Rank(allUpperPlayers.size + 1)
 }
 
 data class UpdateRanksRequest(val transactionId: Int, val rankedPlayers: List<RankedPlayer>) {
@@ -32,8 +32,9 @@ data class UpdateRanksRequest(val transactionId: Int, val rankedPlayers: List<Ra
 
 fun List<Player>.toRanked(): List<RankedPlayer> {
     var upperPlayer: RankedPlayer? = null
+    val upperPlayers: MutableList<RankedPlayer> = mutableListOf()
     return sortedWith(compareByDescending<Player> { it.score }.thenBy { it.nickname })
-        .map { it.toRankedPlayer(upperPlayer).also { res -> upperPlayer = res } }
+        .map { it.toRankedPlayer(upperPlayer, upperPlayers).also { res -> upperPlayer = res; upperPlayers.add(res) } }
 }
 
 fun CreatedPlayerResult.toRanked() = UpdateRanksRequest(transactionId, players.toRanked())

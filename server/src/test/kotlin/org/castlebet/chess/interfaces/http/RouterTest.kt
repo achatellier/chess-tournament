@@ -40,6 +40,7 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
+import java.lang.IllegalStateException
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class RouterTest : WithAssertions {
@@ -262,6 +263,18 @@ internal class RouterTest : WithAssertions {
             val call = handleRequest(HttpMethod.Delete, "/tournament-players")
             with(call) {
                 assertThat(response.status()).isEqualTo(HttpStatusCode.NoContent)
+            }
+        }
+    }
+
+    @Test
+    fun `should return server error when an error occurs`() {
+        testApp {
+            coEvery { rankedPlayers.get(any()) } throws IllegalStateException("error")
+
+            val call = handleRequest(HttpMethod.Get, "/tournament-players/id")
+            with(call) {
+                assertThat(response.status()).isEqualTo(HttpStatusCode.InternalServerError)
             }
         }
     }

@@ -24,11 +24,12 @@ class PlayerTest : WithAssertions {
 
     @Test
     fun `sublist should work as expected`() {
-        assertThat(listOf(0).subList(Page("1"))).isEqualTo(listOf(0))
-        assertThat(IntRange(1, 100).toList().subList(Page("1"))).isEqualTo(IntRange(1, 30).toList())
-        assertThat(IntRange(1, 100).toList().subList(Page("2"))).isEqualTo(IntRange(31, 60).toList())
-        assertThat(IntRange(1, 100).toList().subList(Page("3"))).isEqualTo(IntRange(61, 90).toList())
-        assertThat(IntRange(1, 100).toList().subList(Page("4"))).isEqualTo(IntRange(91, 100).toList())
+        assertThat(Page().toStartIndex()).isEqualTo(0)
+        assertThat(Page().toEndIndex()).isEqualTo(29)
+        assertThat(Page("2").toStartIndex()).isEqualTo(30)
+        assertThat(Page("2").toEndIndex()).isEqualTo(59)
+        assertThat(Page("3").toStartIndex()).isEqualTo(60)
+        assertThat(Page("3").toEndIndex()).isEqualTo(89)
     }
 
 
@@ -40,7 +41,7 @@ class PlayerTest : WithAssertions {
             listOf(
                 Player(PlayerId("1"), Nickname("superman"), null),
                 Player(PlayerId("2"), Nickname("batman"), Score(20)),
-                Player(PlayerId("3"), Nickname("wonderwoman"), Score(20)),
+                Player(PlayerId("3"), Nickname("wonderwoman"), Score(50)),
                 Player(PlayerId("4"), Nickname("joker"), Score(50)),
                 Player(PlayerId("5"), Nickname("robin"), null)
             )
@@ -49,10 +50,10 @@ class PlayerTest : WithAssertions {
         val rankedPlayers = players.toRanked().rankedPlayers
         assertThat(rankedPlayers[0].nickname).isEqualTo(Nickname("joker"))
         assertThat(rankedPlayers[0].rank).isEqualTo(Rank(1))
-        assertThat(rankedPlayers[1].nickname).isEqualTo(Nickname("batman"))
-        assertThat(rankedPlayers[1].rank).isEqualTo(Rank(2))
-        assertThat(rankedPlayers[2].nickname).isEqualTo(Nickname("wonderwoman"))
-        assertThat(rankedPlayers[2].rank).isEqualTo(Rank(2))
+        assertThat(rankedPlayers[1].nickname).isEqualTo(Nickname("wonderwoman"))
+        assertThat(rankedPlayers[1].rank).isEqualTo(Rank(1))
+        assertThat(rankedPlayers[2].nickname).isEqualTo(Nickname("batman"))
+        assertThat(rankedPlayers[2].rank).isEqualTo(Rank(3))
         assertThat(rankedPlayers[3].nickname).isEqualTo(Nickname("robin"))
         assertThat(rankedPlayers[3].rank).isNull()
         assertThat(rankedPlayers[4].nickname).isEqualTo(Nickname("superman"))

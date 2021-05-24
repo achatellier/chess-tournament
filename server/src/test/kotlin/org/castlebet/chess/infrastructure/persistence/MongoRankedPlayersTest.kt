@@ -97,9 +97,9 @@ internal class MongoRankedPlayersTest : WithAssertions {
                 )
             )
             val result = mongoPlayers.get(PlayerId("2"))
-            assertThat(result?.score).isEqualTo(Score(18))
-            assertThat(result?.rank).isEqualTo(Rank(3))
             assertThat(result?.nickname).isEqualTo(Nickname("name2"))
+            assertThat(result?.rank).isEqualTo(Rank(3))
+            assertThat(result?.score).isEqualTo(Score(18))
 
         }
     }
@@ -181,11 +181,11 @@ internal class MongoRankedPlayersTest : WithAssertions {
             mongoPlayers.update(UpdateRanksRequest(1,
                 IntRange(1, 31).map { RankedPlayer(PlayerId("" + it), Nickname("name"), Score(10), Rank(1)) }
             ))
-            val result = mongoPlayers.getAll()
-            assertThat(result.count).isEqualTo(31)
+            val result = mongoPlayers.getAll().also { println(it) }
             assertThat(result.rankedPlayers.size).isEqualTo(30)
             assertThat(result.rankedPlayers[0]).isEqualTo(RankedPlayer(PlayerId("1"), Nickname("name"), Score(10), Rank(1)))
             assertThat(result.rankedPlayers[1]).isEqualTo(RankedPlayer(PlayerId("2"), Nickname("name"), Score(10), Rank(1)))
+            assertThat(result.count).isEqualTo(31)
         }
     }
 
