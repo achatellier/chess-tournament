@@ -15,10 +15,16 @@ It's a very simple read-only frontend, to create some data, you can use the Gatl
 
 Available at http://127.0.0.1:8080/openapi
 
+## How to run Units tests
+
+Unit tests are not part of the docker build due to testcontainers, which seems to be difficult to run in docker-compose with the same configuration on Windows AND Linux. To run the unit tests launch :
+
+    mvn clean test -f server/pom.xml
+
 ## How to run Karate IT tests
 
     docker-compose up -d
-    mvn test -f it/pom.xml
+    mvn clean test -f it/pom.xml
 
 ## How to run Load tests with Gatling 
 
