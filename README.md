@@ -31,13 +31,13 @@ Open the project perf in IntelliJ and run the Main class in the ChessTournamentS
 
 ## Explanations about storage model and transactionId
 
-###Computed pattern
+### Computed pattern
 
 To sort and rank the players, instead of sorting data at each read operation, everything is computed and stored in the database each time a score update occurs.
 
 See : https://www.mongodb.com/blog/post/building-with-patterns-the-computed-pattern
 
-###Transactions
+### Transactions
 
 A single score modification can change the rank of all players and thoses changes have to be made in a single transaction. One way to do that, is to store the tournament data in a single document. 
 
