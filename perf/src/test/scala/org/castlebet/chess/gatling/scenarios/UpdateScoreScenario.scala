@@ -13,8 +13,8 @@ object UpdateScoreScenario {
   val updateScore: ChainBuilder = repeat(2) {
     exec(
       http("Update scores")
-        .patch(session => Config.chess_url + "/tournament-players/" + CreatePlayersScenario.ids(new Random().nextInt(CreatePlayersScenario.ids.length)))
-        .body(StringBody("""{ "score":""" + new Random().nextInt(100) + "}")).asJson
+        .patch(session => Config.chess_url + "/tournament-players/" + CreatePlayersScenario.ids(new Random().nextInt(CreatePlayersScenario.ids.length-1)))
+        .body(StringBody(session => """{ "score":""" + new Random().nextInt(100) + "}")).asJson
         .check(status is 200))
       .pause(2, 8)
   }

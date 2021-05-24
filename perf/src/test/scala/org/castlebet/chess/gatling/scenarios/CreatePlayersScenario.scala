@@ -14,8 +14,6 @@ object CreatePlayersScenario {
 
   var ids = new ListBuffer[String]()
 
-  def orderRef() = Random.nextInt(Integer.MAX_VALUE)
-
   val createPlayer: ChainBuilder = {
     exec(
       http("Insert player ranks")
